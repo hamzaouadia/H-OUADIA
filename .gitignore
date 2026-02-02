@@ -1,3 +1,4 @@
+
 # Dependencies
 node_modules/
 .pnp
@@ -68,3 +69,4 @@ playwright-report/
 *.tmp
 *.temp
 .cache/
+/src/generated/prisma
