@@ -68,3 +68,4 @@ playwright-report/
 *.tmp
 *.temp
 .cache/
+/src/generated/prisma
