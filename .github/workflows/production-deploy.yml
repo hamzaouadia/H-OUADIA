@@ -1,0 +1,79 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Full Test Suite
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Run all checks
+        run: |
+          pnpm lint
+          pnpm type-check
+          pnpm test
+          pnpm build
+        env:
+          SKIP_ENV_VALIDATION: true
+
+  deploy:
+    name: Deploy to Vercel (Production)
+    runs-on: ubuntu-latest
+    needs: test
+    environment:
+      name: production
+      url: https://hamzaouadia.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        id: vercel-deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          scope: ${{ secrets.VERCEL_ORG_ID }}
+          
+      - name: Create Sentry Release
+        if: success()
+        uses: getsentry/action-release@v1
+        continue-on-error: true
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: hamzaouadia
+          SENTRY_PROJECT: portfolio
+        with:
+          environment: production
+          version: ${{ github.sha }}
+          
+      - name: Deployment Summary
+        run: |
+          echo "🎉 Production Deployment Successful!"
+          echo "📍 URL: ${{ steps.vercel-deploy.outputs.preview-url }}"
+          echo "🌐 Live: https://hamzaouadia.com"
+          echo "📦 Version: ${{ github.sha }}"
