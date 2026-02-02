@@ -6,7 +6,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Hamza Ouadia - Full Stack Developer",
-  description: "Portfolio website of Hamza Ouadia, a Full Stack Developer specializing in modern web technologies.",
+  description:
+    "Portfolio website of Hamza Ouadia, a Full Stack Developer specializing in modern web technologies.",
 };
 
 export default function RootLayout({
